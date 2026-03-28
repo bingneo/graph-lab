@@ -2,7 +2,7 @@
  * DB Read Layer — graph/db.ts
  *
  * SECURITY CONTRACT (non-negotiable):
- *   • Only reads from `experiment_records` in the `sciblock_v2` database.
+ *   • Only reads from `experiment_records` in the `sciblock_v1` database.
  *   • SELECT only. Zero writes, zero DDL, zero migrations, zero other tables.
  *   • Only the fields required for graph generation are fetched (no SELECT *).
  *   • Connection config sourced exclusively from EXT_* environment variables.
@@ -22,6 +22,7 @@
  */
 
 import pg from "pg";
+import { buildPgClientConfig } from "../db-config.js";
 import type { ExperimentRecordRow } from "./types.js";
 
 // ─── Pool Singleton ────────────────────────────────────────────────────────────
@@ -32,17 +33,10 @@ function getPool(): pg.Pool {
   if (_pool) return _pool;
 
   _pool = new pg.Pool({
-    host: process.env.EXT_DB_HOST,
-    port: parseInt(process.env.EXT_DB_PORT ?? "5432", 10),
-    database: process.env.EXT_DB_NAME,
-    user: process.env.EXT_DB_USER,
-    password: process.env.EXT_DB_PASSWORD,
-    ssl: false,
-
+    ...buildPgClientConfig(false, 10_000),
     max: 4,
     min: 0,
     idleTimeoutMillis: 30_000,
-    connectionTimeoutMillis: 10_000,
   });
 
   _pool.on("error", (err: Error) => {

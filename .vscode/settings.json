@@ -1,0 +1,9 @@
+{
+  "chat.tools.terminal.autoApprove": {
+    "docker compose": true,
+    "/^cmd /c docker\\\\deploy-local-proxy\\.cmd$/": {
+      "approve": true,
+      "matchCommandLine": true
+    }
+  }
+}

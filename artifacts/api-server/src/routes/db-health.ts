@@ -1,5 +1,6 @@
 import { Router, type IRouter } from "express";
 import pg from "pg";
+import { buildPgClientConfig, listMissingDbEnv, resolveDbConfig } from "../lib/db-config.js";
 
 const router: IRouter = Router();
 
@@ -31,17 +32,19 @@ interface DbHealthResponse {
 function classifyError(err: unknown): string {
   if (!(err instanceof Error)) return `Unknown error: ${String(err)}`;
 
+  const config = resolveDbConfig();
+
   const msg = err.message ?? "";
   const code = (err as NodeJS.ErrnoException).code ?? "";
 
   if (code === "ENOTFOUND" || code === "EAI_AGAIN" || msg.includes("getaddrinfo")) {
-    return `DNS / host resolution failed: cannot resolve "${process.env.EXT_DB_HOST ?? ""}". Check EXT_DB_HOST.`;
+    return `DNS / host resolution failed: cannot resolve "${config.host ?? ""}". Check DATABASE_URL / EXT_DB_HOST.`;
   }
   if (code === "ECONNREFUSED" || code === "ETIMEDOUT" || code === "EHOSTUNREACH") {
-    return `Port unreachable: cannot reach ${process.env.EXT_DB_HOST ?? ""}:${process.env.EXT_DB_PORT ?? "5432"}. Check firewall or port.`;
+    return `Port unreachable: cannot reach ${config.host ?? ""}:${config.port}. Check firewall or port.`;
   }
   if (msg.includes("password authentication failed") || msg.includes("authentication failed")) {
-    return `Authentication failed: wrong username or password. Check EXT_DB_USER / EXT_DB_PASSWORD.`;
+    return "Authentication failed: wrong username or password. Check DATABASE_URL / EXT_DB_USER / EXT_DB_PASSWORD.";
   }
   if (msg.includes("SSL") || msg.includes("ssl") || msg.includes("TLS") || msg.includes("certificate")) {
     return `SSL / TLS error: ${msg}`;
@@ -56,47 +59,26 @@ function classifyError(err: unknown): string {
 }
 
 function buildClientConfig(ssl: boolean): pg.ClientConfig {
-  const connectionString = process.env.EXT_DATABASE_URL;
-  if (connectionString) {
-    return {
-      connectionString,
-      ssl: ssl ? { rejectUnauthorized: false } : false,
-      connectionTimeoutMillis: 8000,
-    };
-  }
-  return {
-    host: process.env.EXT_DB_HOST,
-    port: parseInt(process.env.EXT_DB_PORT ?? "5432", 10),
-    database: process.env.EXT_DB_NAME,
-    user: process.env.EXT_DB_USER,
-    password: process.env.EXT_DB_PASSWORD,
-    ssl: ssl ? { rejectUnauthorized: false } : false,
-    connectionTimeoutMillis: 8000,
-  };
+  return buildPgClientConfig(ssl ? { rejectUnauthorized: false } : false, 8000);
 }
 
 router.get("/db-health", async (_req, res) => {
   const checks: CheckResult[] = [];
+  const config = resolveDbConfig();
 
   const response: DbHealthResponse = {
     connected: false,
     driver: "pg (node-postgres)",
     ssl: false,
-    configuredHost: process.env.EXT_DB_HOST ?? "(not set)",
-    configuredPort: parseInt(process.env.EXT_DB_PORT ?? "5432", 10),
-    configuredDatabase: process.env.EXT_DB_NAME ?? "(not set)",
-    configuredUser: process.env.EXT_DB_USER ?? "(not set)",
+    configuredHost: config.host ?? "(not set)",
+    configuredPort: config.port,
+    configuredDatabase: config.database ?? "(not set)",
+    configuredUser: config.user ?? "(not set)",
     checks,
   };
 
   // Guard: require credentials
-  const missing: string[] = [];
-  if (!process.env.EXT_DATABASE_URL) {
-    if (!process.env.EXT_DB_HOST) missing.push("EXT_DB_HOST");
-    if (!process.env.EXT_DB_NAME) missing.push("EXT_DB_NAME");
-    if (!process.env.EXT_DB_USER) missing.push("EXT_DB_USER");
-    if (!process.env.EXT_DB_PASSWORD) missing.push("EXT_DB_PASSWORD");
-  }
+  const missing = listMissingDbEnv();
   if (missing.length > 0) {
     checks.push({
       step: "config-check",
@@ -174,7 +156,7 @@ router.get("/db-health", async (_req, res) => {
     checks.push({ step: "SELECT 1", ok: false, error: classifyError(err) });
   }
 
-  await client.end().catch(() => {});
+  await client.end().catch(() => { });
 
   res.status(200).json(response);
 });

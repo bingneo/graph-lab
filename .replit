@@ -31,9 +31,9 @@ timeoutMs = 20000
 [userenv.shared]
 EXT_DB_HOST = "114.132.84.75"
 EXT_DB_PORT = "5432"
-EXT_DB_NAME = "sciblock_v2"
+EXT_DB_NAME = "sciblock_v1"
 EXT_DB_USER = "postgres"
-EXT_DATABASE_URL = "postgresql://postgres:081e547e37a0f121dbed1c930171365d@114.132.84.75:5432/sciblock_v2"
+EXT_DATABASE_URL = "postgresql://postgres:081e547e37a0f121dbed1c930171365d@114.132.84.75:5432/sciblock_v1"
 
 [nix]
 channel = "stable-25_05"

@@ -89,10 +89,10 @@ export function GraphLabPage() {
         setRecordPanel((prev) =>
           prev?.recordId === recordId
             ? {
-                ...prev,
-                isLoading: false,
-                error: err instanceof Error ? err.message : "加载实验记录快照失败",
-              }
+              ...prev,
+              isLoading: false,
+              error: err instanceof Error ? err.message : "加载实验记录快照失败",
+            }
             : prev
         );
       });
@@ -126,10 +126,10 @@ export function GraphLabPage() {
           setRecordPanel((prev) =>
             prev?.recordId === recordId && prev.selectedModule === moduleKey
               ? {
-                  ...prev,
-                  moduleLoading: false,
-                  moduleError: err instanceof Error ? err.message : "模块详情加载失败",
-                }
+                ...prev,
+                moduleLoading: false,
+                moduleError: err instanceof Error ? err.message : "模块详情加载失败",
+              }
               : prev
           );
         });
@@ -176,7 +176,7 @@ export function GraphLabPage() {
           </form>
 
           <div className="text-[11px] text-slate-400 hidden md:flex items-center px-4">
-            sciblock_v2 · read-only
+            sciblock_v1 · read-only
           </div>
         </div>
       </header>

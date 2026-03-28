@@ -99,7 +99,7 @@ Utility scripts package. Each script is a `.ts` file in `src/` with a correspond
 
 ## Graph Lab Module (Pre-integration Development)
 
-**Purpose:** Standalone read-only verification environment for SciBlock's mechanism graph feature. Uses a copy of the production DB (`sciblock_v2`) to validate graph data models and UI before integration into the SciBlock main project.
+**Purpose:** Standalone read-only verification environment for SciBlock's mechanism graph feature. Uses a copy of the production DB (`sciblock_v1`) to validate graph data models and UI before integration into the SciBlock main project.
 
 ### Architecture
 
@@ -119,6 +119,7 @@ routes/
 ```
 
 **Endpoints:**
+
 - `GET /api/graph/lineage?sci_note_id=<uuid>` — experiment derivation DAG for a SciNote
 - `GET /api/graph/snapshot?record_id=<uuid>` — module-level mechanism chain for one record
 - `GET /api/graph/module-detail?record_id=<uuid>&module_key=<key>` — structured detail for one module
@@ -126,7 +127,8 @@ routes/
 - `GET /api/graph/mechanism-chain?sci_note_id=<uuid>` — mechanism chain graph (blocks + project node + edges)
 
 **Security rules (non-negotiable):**
-- Only reads `experiment_records` table from `sciblock_v2`
+
+- Only reads `experiment_records` table from `sciblock_v1`
 - All credentials via `EXT_DB_*` env vars only (never `DATABASE_URL`)
 - Zero writes, zero DDL, zero migrations
 - No auto-enumeration of tables
@@ -173,6 +175,7 @@ Clicking a record in the parameter view triggers `loadSnapshot()` — same handl
 ### Contract Layer: `lib/graph-contract/src/index.ts`
 
 Single source of truth for all API-surface types. Includes:
+
 - Lineage types: `LineageGraph`, `LineageNode`, `LineageEdge`
 - Snapshot types: `MechanismSnapshotGraph`, `ModuleNode`, `ModuleEdge`
 - Module detail types: discriminated union `ModuleDetailData` + per-module interfaces

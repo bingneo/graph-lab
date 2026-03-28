@@ -86,7 +86,7 @@ artifacts/graph-lab/src/
 
 The module is designed to stay low-coupling throughout the development cycle:
 
-- **No shared state** with other artifacts. graph-lab only reads from `sciblock_v2`
+- **No shared state** with other artifacts. graph-lab only reads from `sciblock_v1`
   via `EXT_*` credentials. It does not use the main workspace database.
 - **No inter-artifact imports.** graph-lab imports only from
   `@workspace/graph-contract` (types only) and its own local files.

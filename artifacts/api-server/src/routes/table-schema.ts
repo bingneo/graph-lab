@@ -1,22 +1,11 @@
 import { Router, type IRouter } from "express";
 import pg from "pg";
+import { buildPgClientConfig } from "../lib/db-config.js";
 
 const router: IRouter = Router();
 
 function buildClientConfig(): pg.ClientConfig {
-  const connectionString = process.env.EXT_DATABASE_URL;
-  if (connectionString) {
-    return { connectionString, ssl: false, connectionTimeoutMillis: 8000 };
-  }
-  return {
-    host: process.env.EXT_DB_HOST,
-    port: parseInt(process.env.EXT_DB_PORT ?? "5432", 10),
-    database: process.env.EXT_DB_NAME,
-    user: process.env.EXT_DB_USER,
-    password: process.env.EXT_DB_PASSWORD,
-    ssl: false,
-    connectionTimeoutMillis: 8000,
-  };
+  return buildPgClientConfig(false, 8000);
 }
 
 /**
@@ -74,7 +63,7 @@ router.get("/table-schema", async (req, res) => {
       res.status(404).json({
         error: `Table "${safeTable}" not found in schema "public", or the current user has no access to it.`,
       });
-      await client.end().catch(() => {});
+      await client.end().catch(() => { });
       return;
     }
 
@@ -115,7 +104,7 @@ router.get("/table-schema", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: `Query failed: ${(err as Error).message}` });
   } finally {
-    await client.end().catch(() => {});
+    await client.end().catch(() => { });
   }
 });
 
