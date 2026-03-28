@@ -1,0 +1,131 @@
+Step 5：增强 block 的研发阶段语义（归档逻辑 + 命名 + 阶段标签）
+Step 4 我先通过。
+现在进入 Step 5。
+这一步不要继续加新交互，重点是提升 Mechanism Graph 的“研发阶段语义”。
+当前主链、弹窗、compare mode 都已经基本成立。
+接下来最重要的是让：
+block 的划分更像“研发阶段”
+block 的命名更像“阶段目标”
+主链更像“研发推进过程”
+而不是仅仅基于结构相似度把实验堆成几个块。
+一、这一步的目标
+提升 block 的语义质量，重点包括：
+优化 block 自动归档逻辑
+优化 block 命名
+优化阶段标签 / block status 的语义表达
+让主链更能体现“探索 → 验证 → 确认”的研发推进感
+二、当前问题
+当前 block 归档逻辑主要还是基于：
+system fingerprint
+operation fingerprint
+measurement fingerprint
+phase_transition
+Jaccard 相似度阈值
+这作为 V1 可以接受，但还不够表达研发语义。
+当前会有几个问题：
+block 更像“结构相似实验簇”，不够像“研发阶段”
+objective_summary 可能过于接近某个操作名，语义偏弱
+stage_label 目前偏技术化，不够像用户能理解的阶段命名
+主链可能更像“实验分组顺序”，而不是“研发推进顺序”
+三、这一步要增强的方向
+请在不推翻 Step 1-4 结构的前提下，增强 block 的归档与命名逻辑。
+四、block 归档逻辑增强要求
+在当前结构相似度规则之上，加入更强的“研发阶段语义”判断。
+请优先考虑以下因素：
+1. 研发目标 / 实验意图
+优先判断实验是在做什么，例如：
+条件探索
+参数优化
+重复验证
+测量验证
+结果确认
+block 应尽量围绕“同一目标”归档，而不是只围绕“相似模块名”归档。
+2. 阶段跃迁
+当实验从一种研发意图推进到另一种时，优先新建 block。
+例如：
+从探索转到验证
+从验证转到确认
+从系统搭建转到正式测量
+3. 重复实验归档
+重复验证、复测、补做、小范围调参，仍应优先归入同一个 block。
+4. 方法路径变化
+如果核心实验路径、核心方法、核心测量方式明显变化，仍应切新 block。
+五、建议先引入 block type / stage intent 推断
+请尝试给 block 增加更明确的语义类型，例如：
+system_setup
+condition_exploration
+parameter_optimization
+repeat_validation
+measurement_validation
+result_confirmation
+第一版不要求完全智能，但请做一个规则推断器，基于当前真实数据尽可能推断 block type。
+要求：
+block type 不要只存在于 UI，应该进入 block 数据结构
+后续主链展示、筛选、AI 接管都能用这层类型
+六、block 命名优化要求
+当前 block 命名不要长期停留在：
+某个操作名
+阶段 1 / 阶段 2
+过于技术性的占位名
+请增强 block 标题生成逻辑，使其更像真实研发阶段名称。
+目标效果类似：
+初始条件探索
+温度参数优化
+重复验证实验
+电学性能测量验证
+最终结果确认
+第一版允许规则生成，不要求 AI，但不要太机械。
+建议综合以下信息生成标题：
+block type
+实验目标摘要
+核心变量 / 核心方法
+标签分布 / 状态分布
+七、阶段标签优化要求
+当前 stage_label 和 block_status 也请一起增强。
+希望能更自然表达当前阶段，而不是只有技术占位含义。
+例如：
+探索中
+优化中
+验证中
+已确认
+混合阶段
+请给出一套更合理的规则，让 block 状态更贴近研发过程。
+八、主链推进感增强要求
+最终效果上，希望主链更接近：
+项目起点
+初始探索
+参数优化
+重复验证
+测量验证
+结果确认
+而不是单纯：
+阶段 1
+阶段 2
+阶段 3
+也就是说，主链顺序和 block 命名一起，要更像“研发推进故事线”。
+九、实现要求
+请尽量在现有 backend pure-function 模块里增强，而不是把语义判断散落到前端。
+建议检查是否可以新增 / 拆出：
+inferBlockType()
+generateBlockTitle()
+inferStageIntent()
+deriveBlockStatus()
+不要把这些规则硬塞在一个函数里。
+十、这一步先不做的内容
+这一步先不要做：
+LLM 自动归档
+用户手动拖拽 block 改顺序
+用户手动合并 / 拆分 block
+graph 新交互
+持久化 compare 关系
+筛选器面板
+先把 block 的语义质量做强。
+十一、本步交付要求
+完成后请告诉我：
+新增 / 修改了哪些文件
+block type / stage intent 是如何推断的
+block title 是如何生成的
+block status / stage label 的规则是什么
+当前比 Step 4 提升了哪些研发阶段语义
+是否已有真实数据案例能看到多个不同语义 block
+TypeScript 是否零错误

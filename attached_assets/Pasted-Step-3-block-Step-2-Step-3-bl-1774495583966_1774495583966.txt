@@ -1,0 +1,122 @@
+Step 3：实现任意两个 block 的比较模式（虚线连接 + 差异弹窗）
+Step 2 我先通过。
+现在进入 Step 3。
+这一步重点不是继续完善主链实线，而是开始实现：
+用户选择任意两个 block，用虚线连接，并查看这两个 block 之间的实验信息差异。
+一、这一步的目标
+在 Mechanism Graph 中新增 compare mode，支持：
+用户进入比较模式
+依次选择任意两个 block
+这两个 block 之间用 虚线 连接
+点击虚线，或点击比较结果入口，弹出比较弹窗
+比较弹窗展示两个 block 在实验信息上的差异
+二、比较模式的交互要求
+请实现一个明确的 compare mode，不要让普通点击 block 和比较选择混在一起。
+建议交互：
+页面上增加一个“比较模式”入口
+例如按钮或 toggle
+开启 compare mode 后：
+第一次点击 block：选中第一个 block
+第二次点击另一个 block：选中第二个 block
+选中两个 block 后：
+图上显示一条 compare_transition 虚线
+支持退出 / 取消比较：
+清空选中状态
+清除虚线
+要求：
+普通模式下点击 block 仍然打开 block detail dialog
+compare mode 下点击 block 才是“选中用于比较”
+三、compare edge 的数据要求
+请基于 Step 1 已预留的 compare_transition 类型，开始真正落地 compare edge。
+要求：
+compare edge 和 main edge 明确区分
+main_transition：主链实线
+compare_transition：比较虚线
+compare edge 不参与主链结构
+compare edge 是用户当前会话中的临时比较边
+compare edge 的 source / target 是任意两个 block
+如果你觉得合适，可以先把 compare edge 做成前端临时状态生成，不一定马上落库。
+四、虚线展示要求
+compare edge 的视觉必须和主链实线明显区分。
+建议：
+使用虚线
+颜色与主链边不同
+可点击
+选中时有更清晰的高亮反馈
+重点是让用户一眼能区分：
+哪些是研发推进主链
+哪些是用户主动发起的横向比较
+五、比较弹窗的内容要求
+点击 compare edge 后，弹出比较弹窗。
+这个弹窗不是 block detail，而是 两个 block 的差异查看器。
+差异内容至少按以下 4 个维度展示：
+实验系统
+实验准备
+实验操作
+测量过程
+也就是说：
+每个 block 后面都有自己的实验信息
+这些实验信息平时不在主图全部展开
+但在 compare dialog 中，要拿出来做对比
+六、差异展示方式要求
+不要直接把两个 block 的原始 JSON 打出来。
+请做成结构化分组展示。
+建议至少做到：
+左侧：block A
+右侧：block B
+中间或下方：差异摘要 / 差异项分组
+按 4 个维度分别展示：
+哪些内容相同
+哪些内容不同
+哪些内容只存在于某一侧
+即使第一版先不做很强的语义总结，也至少要有结构化对比，不要是占位文案了。
+七、状态管理要求
+compare mode 的状态仍然由页面层统一管理，不要分散到节点组件里。
+建议新增类似：
+isCompareMode
+compareSelection: [blockId1 | null, blockId2 | null]
+activeCompareEdge
+overlay.type = "compare-transition-detail"
+页面层负责：
+进入 / 退出 compare mode
+记录选中的两个 block
+生成 compare edge
+打开 / 关闭 compare dialog
+八、组件层建议
+请按分层继续实现，不要把 compare 逻辑塞进现有节点组件里。
+建议新增 / 扩展：
+图层
+CompareTransitionEdge
+如有必要，给 block node 增加 compare mode 下的 selected state
+弹窗层
+CompareTransitionDialog
+业务层 / 适配层
+两个 block → compare edge 的构造逻辑
+两个 block → 对比 view model 的构造逻辑
+九、这一步先不做的内容
+这一步先不要做：
+compare edge 持久化到数据库
+多组 compare edge 同时长期保存
+AI 自动生成高级差异总结
+compare mode 下复杂多选批量对比
+相邻 block 实线差异内容和 compare 差异内容完全统一抽象
+先把：
+compare mode
+两个 block 虚线连接
+可点击 compare dialog
+四维度结构化差异显示
+做稳。
+十、本步交付要求
+完成后请告诉我：
+新增 / 修改了哪些文件
+compare mode 的状态管理写在哪
+compare edge 是如何生成的
+compare edge 和 main edge 是如何区分渲染的
+compare dialog 的数据流是怎样的
+现在 compare dialog 中哪些内容已经是真实差异数据
+TypeScript 是否零错误
+当前页面里是否已经能完成：
+进入比较模式
+选择两个 block
+看到虚线
+点击虚线打开差异弹窗

@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/graph-lab/"
+title = "Graph Lab"
+version = "1.0.0"
+id = "artifacts/graph-lab"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/graph-lab/" ]
+localPort = 19452
+
+[services.development]
+run = "pnpm --filter @workspace/graph-lab run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/graph-lab", "run", "build" ]
+publicDir = "artifacts/graph-lab/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19452"
+BASE_PATH = "/graph-lab/"
